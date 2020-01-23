@@ -1,5 +1,0 @@
-#Necessary packages.
-library(ggplot2)
-library(cowplot)
-library(dplyr)
-library(rfishbase)
