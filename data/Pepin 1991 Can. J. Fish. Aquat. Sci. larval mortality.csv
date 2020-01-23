@@ -1,0 +1,32 @@
+﻿Species,Spawning mode,minimum length,max length,midpoint,growth rate mm/day,mort rate 1/day,Temp,ln mass g,ln mort rate
+Anchoa mitchilli,pelagic,3.4,12.5,7.95,0.56,0.32,29,-5.949578838,-1.139434283
+Anchoa mitchilli,pelagic,3.4,12.5,7.95,0.43,0.45,24.4,-5.949578838,-0.798507696
+Anchoa mitchilli,pelagic,3.4,12.5,7.95,0.48,0.3,28.1,-5.949578838,-1.203972804
+Anchoa mitchilli,pelagic,3.4,12.5,7.95,0.48,0.42,30.7,-5.949578838,-0.867500568
+Archosargus rhomboidalis,pelagic,4,8,6,0.25,0.18,24,-5.329117892,-1.714798428
+Cololabis saira,pelagic,7.5,57.5,32.5,1.16,0.07,14.5,-2.319523303,-2.659260037
+Clupea harengus,demersal,6.5,30.4,18.45,0.19,0.04,8,-3.288862648,-3.218875825
+Clupea harengus,demersal,6.7,11.4,9.05,0.18,0.06,7,-5.489868451,-2.813410717
+Clupea pallasi,demersal,7.7,30,18.85,0.39,0.09,11,-3.037895422,-2.407945609
+Clupea pallasi,demersal,7.7,18,12.85,0.4,0.09,12,-4.221887949,-2.407945609
+Clupea pallasi,demersal,7.7,21.4,14.55,0.36,0.31,11,-3.837964156,-1.171182982
+Clupea pallasi,demersal,7.7,29,18.35,0.41,0.06,10,-3.120964941,-2.813410717
+Engraulis mordax,pelagic,3,15,9,0.4,0.22,15.5,-5.527517575,-1.514127733
+Etrumeus teres,pelagic,4.5,16,10.25,0.5,0.13,24,-5.126460088,-2.040220829
+Etrumeus teres,pelagic,4.5,16,10.25,0.5,0.13,24,-5.126460088,-2.040220829
+Opisthonema oglinum,,6.5,19,12.75,0.8,0.21,26,-4.007156567,-1.560647748
+Opisthonema oglinum,,6.5,19,12.75,0.8,0.26,26,-4.007156567,-1.347073648
+Pleuronectes platessa,pelagic,7,11.5,9.25,0.04,0.06,6,-5.097335262,-2.813410717
+Pseudopleuronectes americanus,demersal,3.5,6,4.75,0.16,0.12,14.5,-6.805267256,-2.120263536
+Sardinella aurita,,3,12,7.5,0.96,0.46,23,-5.752600367,-0.776528789
+Sardinops melanostica,pelagic,5,15,10,0.23,0.1,15.1,-4.743283488,-2.302585093
+Scomber japonicus,pelagic,2.8,15,8.9,0.64,0.32,18,-5.214201084,-1.139434283
+Scomber scombrus,pelagic,3.2,8,5.6,0.57,0.38,15.4,-6.787618036,-0.967584026
+Scomber scombrus,pelagic,3.2,8,5.6,0.59,0.53,15.7,-6.787618036,-0.634878272
+Scomber scombrus,pelagic,3.2,8,5.6,0.69,0.71,17.3,-6.787618036,-0.342490309
+Sebastes spp,internal brooding,6.4,17.9,12.15,0.16,0.04,7,-4.020937956,-3.218875825
+Sebastes spp,internal brooding,6.4,9,7.7,0.04,0.04,6.8,-5.389264478,-3.218875825
+Sebastes spp,internal brooding,9,11.3,10.15,0.07,0.06,8.8,-4.560504349,-2.813410717
+Sebastes spp,internal brooding,11.3,21.4,16.35,0.26,0.13,11.5,-3.130241773,-2.040220829
+Trachurus symmetricus,pelagic,3.3,5.1,4.2,0.16,0.28,15,-7.187565488,-1.272965676
+Trachurus symmetricus,pelagic,3.3,12,7.65,0.22,0.18,15,-5.418683176,-1.714798428
