@@ -62,7 +62,7 @@ Eze_high <- confint(egg_mort_mod)[2,2]
 
 #egg development
 
-egg_dev<-read.csv("~Pauly & Pullin 1988 Enviro. Biol. Fish. egg development time.csv", header=T)
+egg_dev<-read.csv("~Pauly & Pullin 1988 Enviro. Biol. Fish. egg development time.csv")
 str(egg_dev)
 
 egg_dev_mod <- lm(ln.dt~ln.egg.mass.g+temp.c, data = egg_dev)
@@ -82,7 +82,7 @@ ne_high <- confint(egg_dev_mod)[2,2]
 
 #larval growth
 
-larv_growth <- read.csv("~houde 1989 Bull. Mar. Sci. larval growth.csv", stringsAsFactor = T)
+larv_growth <- read.csv("~houde 1989 Bull. Mar. Sci. larval growth.csv")
 head(larv_growth)
 
 l_growth_mod <- lm(ln.gr~Temperature+ln.mass, data = larv_growth)
@@ -103,7 +103,7 @@ nl_high <- confint(l_growth_mod)[3,2]
 
 #larval mortality
 
-larv_mort <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Sci. larval mortality.csv", stringsAsFactor=F)
+larv_mort <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Sci. larval mortality.csv")
 str(larv_mort)
 
 l_mort_mod <- lm(log(mort.rate.1.day)~ln.mass.g+Temp, data = larv_mort)
