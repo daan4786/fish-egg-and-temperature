@@ -4,6 +4,8 @@ library(ggplot2)
 library(cowplot)
 library(dplyr)
 library(rfishbase)
+library(MCMCglmm)
+library(HDInterval)
 
 ############################################
 # The egg mass - temp relationship 
@@ -47,113 +49,98 @@ summary(modd)
 egg_mort <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Sci. egg mortality.csv")
 head(egg_mort)
 
-egg_mort_mod <- lm(log(egg.mortality.rate..1.day.)~Temp.C, data = egg_mort)
-summary(egg_mort_mod)
-confint(egg_mort_mod)
 
-be <- exp(egg_mort_mod$coef[1])
-Eze <- egg_mort_mod$coef[2]
+egg_mort_mod_mcmc <- MCMCglmm(log(egg.mortality.rate..1.day.)~Temp.C, data = egg_mort, nitt=100000, burnin=10000)
+summary(egg_mort_mod_mcmc)
+#plot(egg_mort_mod_mcmc) #inspect trace and density plots to ensure convergence.
 
-be_low <- exp(confint(egg_mort_mod)[1,1])
-Eze_low <- confint(egg_mort_mod)[2,1]
 
-be_high <- exp(confint(egg_mort_mod)[1,2])
-Eze_high <- confint(egg_mort_mod)[2,2]
+posterior_egg_mort_temp_dep <- egg_mort_mod_mcmc$Sol[,2]
+posterior_egg_mort_int <- egg_mort_mod_mcmc$Sol[,1]
+
+
+be <- exp(mean(posterior_egg_mort_int))
+Eze <- mean(posterior_egg_mort_temp_dep)
+
 
 #egg development
 
-egg_dev<-read.csv("~Pauly & Pullin 1988 Enviro. Biol. Fish. egg development time.csv")
-str(egg_dev)
+egg_dev<-read.csv("~Pauly & Pullin 1988 Enviro. Biol. Fish. egg development time.csv", header=T)
 
-egg_dev_mod <- lm(ln.dt~ln.egg.mass.g+temp.c, data = egg_dev)
-summary(egg_dev_mod)
 
-ae <- exp(egg_dev_mod$coef[1])
-Ege <- egg_dev_mod$coef[3]
-ne <- egg_dev_mod$coef[2]
+egg_dev_mod_mcmc <- MCMCglmm(ln.dt~ln.egg.mass.g+temp.c, data = egg_dev, nitt=100000, burnin=10000)
+summary(egg_dev_mod_mcmc)
+#plot(egg_dev_mod_mcmc) #inspect trace and density plots to ensure convergence.
 
-ae_low <- exp(confint(egg_dev_mod)[1,1])
-Ege_low <- confint(egg_dev_mod)[3,1]
-ne_low <- confint(egg_dev_mod)[2,1]
 
-ae_high <- exp(confint(egg_dev_mod)[1,2])
-Ege_high <- confint(egg_dev_mod)[3,2]
-ne_high <- confint(egg_dev_mod)[2,2]
+posterior_egg_dev_mass_dep <- egg_dev_mod_mcmc$Sol[,2]
+posterior_egg_dev_temp_dep <- egg_dev_mod_mcmc$Sol[,3]
+posterior_egg_dev_int <- egg_dev_mod_mcmc$Sol[,1]
+
+ae <- exp(mean(posterior_egg_dev_int))
+Ege <- mean(posterior_egg_dev_temp_dep)
+ne <- mean(posterior_egg_dev_mass_dep)
 
 #larval growth
 
-larv_growth <- read.csv("~houde 1989 Bull. Mar. Sci. larval growth.csv")
+larv_growth <- read.csv("~houde 1989 Bull. Mar. Sci. larval growth.csv", stringsAsFactor = T)
 head(larv_growth)
 
-l_growth_mod <- lm(ln.gr~Temperature+ln.mass, data = larv_growth)
-summary(l_growth_mod)
+l_growth_mod_mcmc <- MCMCglmm(ln.gr~temp+ln.mass, data = barn_l_g, nitt=100000, burnin=10000)
+summary(l_growth_mod_mcmc)
+#plot(l_growth_mod_mcmc)
 
-al <- exp(l_growth_mod$coef[1])
-Eg <- l_growth_mod$coef[2]
-nl <- l_growth_mod$coef[3]
+posterior_l_growth_mass_dep <- l_growth_mod_mcmc$Sol[,3]
+posterior_l_growth_temp_dep <- l_growth_mod_mcmc$Sol[,2]
+posterior_l_growth_int <- l_growth_mod_mcmc$Sol[,1]
 
-al_low <- exp(confint(l_growth_mod)[1,1])
-Eg_low <- confint(l_growth_mod)[2,1]
-nl_low <- confint(l_growth_mod)[3,1]
-
-al_high <- exp(confint(l_growth_mod)[1,2])
-Eg_high <- confint(l_growth_mod)[2,2]
-nl_high <- confint(l_growth_mod)[3,2]
+al <- exp(mean(posterior_l_growth_int))
+Eg <- mean(posterior_l_growth_temp_dep)
+nl <- mean(posterior_l_growth_mass_dep)
 
 
 #larval mortality
 
-larv_mort <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Sci. larval mortality.csv")
-str(larv_mort)
+larv_mort <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Sci. larval mortality.csv", stringsAsFactor=F)
 
-l_mort_mod <- lm(log(mort.rate.1.day)~ln.mass.g+Temp, data = larv_mort)
-summary(l_mort_mod)
 
-bl <- exp(l_mort_mod$coef[1])
-Ez <- l_mort_mod$coef[3]
-xl <- l_mort_mod$coef[2]
+l_mort_mod_mcmc <- MCMCglmm(log(mort.rate.1.day)~ln.mass.g+Temp, data = larv_mort, nitt=100000, burnin=10000)
+summary(l_mort_mod_mcmc)
+#plot(l_mort_mod_mcmc)
 
-bl_low <- exp(confint(l_mort_mod)[1,1])
-Ez_low <- confint(l_mort_mod)[3,1]
-xl_low <- confint(l_mort_mod)[2,1]
+posterior_l_mort_mass_dep <- l_mort_mod_mcmc$Sol[,2]
+posterior_l_mort_temp_dep <- l_mort_mod_mcmc$Sol[,3]
+posterior_l_mort_int <- l_mort_mod_mcmc$Sol[,1]
 
-bl_high <- exp(confint(l_mort_mod)[1,2])
-Ez_high <- confint(l_mort_mod)[3,2]
-xl_high <- confint(l_mort_mod)[2,2]
+
+bl <- exp(mean(posterior_l_mort_int))
+Ez <- mean(posterior_l_mort_temp_dep)
+xl <- mean(posterior_l_mort_mass_dep)
 
 #Mass at hatch
 
-larv_hat <- read.csv("~/Documents/research/working projects/dimensionless life history numbers/working code, data and writing/off size/temperature/table 3 Pepin 1991 egg diam-LHAT.csv", stringsAsFactor=F)
-head(larv_hat)
+larv_hat <- read.csv("~Pepin 1991 Can. J. Fish. Aquat. Schi. egg mass-mass at hatch.csv", stringsAsFactor=F)
 
-l_hat <- lm(log(mass.at.hatch)~log(egg.mass), data = larv_hat)
-summary(l_hat)
+l_met_mcmc <- MCMCglmm(log(mass.at.hatch)~log(egg.mass), data = larv_met, nitt=100000, burnin=10000)
+summary(l_met_mcmc)
+#plot(l_met_mcmc)
 
-I<-exp(l_hat$coef[1])
-q<-(l_hat$coef[2])
+posterior_l_met_temp_dep <- l_met_mcmc$Sol[,2]
+posterior_l_met_int <- l_met_mcmc$Sol[,1]
 
-I_low<-exp(confint(l_hat)[1,1])
-q_low<-confint(l_hat)[2,1]
+I<-exp(mean(posterior_l_met_int))
+q<-mean(posterior_l_met_temp_dep)
 
-I_high<-exp(confint(l_hat)[1,2])
-q_high<-confint(l_hat)[2,2]
 
 ############################################
 #The model
 ############################################
 
-my_mod <- function(m, Te){
+my_mod <- function(m, Te, bl, al, xl, nl, I, q, be, ae, Eze, Ege, ne, Ez, Eg){
 	
-	#Using fitted value for each parameter:
-	survival_best <- exp( ( (bl/al) * (1/(xl-nl +1)) *exp((Ez-Eg)*Te)* ((I*m^q)^(xl-nl+1) - (0.01)^(xl-nl+1)))  - ((be * ae) * exp((Eze+Ege)*Te)*m^(ne)))  * (1/m)
+	survival_best <- exp( ( (bl/al) * (1/(xl-nl +1)) * exp((Ez - Eg)*Te) * ((I*m^q)^(xl-nl+1) - (0.1)^(xl-nl+1)))  - ((be * ae) * exp((Eze+Ege)*Te)*m^(ne)))  * (1/m)
 	
-	#Using lower 95%CI for each parameter:
-	survival_low <- exp( ( (bl_low/al_low) * (1/(xl_low-nl_low +1)) *exp((Ez_low-Eg_low)*Te) * ((I_low*m^q_low)^(xl_low-nl_low+1) - (0.01)^(xl_low-nl_low+1)))  - ((be_low * ae_low) * exp((Eze_low+Ege_low)*Te)*m^(ne_low)))  * (1/m)
-	
-	#Using higher 95%CI for each parameter:
-	survival_high <- exp( ( (bl_high/al_high) * (1/(xl_high-nl_high +1))*exp((Ez_high-Eg_high)*Te) * ((I_high*m^q_high)^(xl_high-nl_high+1) - (0.01)^(xl_high-nl_high+1)))  - ((be_high * ae_high) * exp((Eze_high+Ege_high)*Te)*m^(ne_high)))  * (1/m)
-	
-	d<-data.frame(cbind(survival_best, survival_low, survival_high))
+	d<-data.frame(survival_best)
 	
 	return(d)
 	
@@ -165,47 +152,85 @@ my_mod <- function(m, Te){
 ############################################
 
 
-mass <- seq(0.000001, 10, by = 0.000001)
+mass000000 <- seq(0.00000000000000000000000000001, 0.00000000000000000000000001, by = 0.00000000000000000000000000001)
+mass00000 <- seq(0.00000000000000000000000001, 0.00000000000000000000001, by = 0.00000000000000000000000001)
+mass0000 <- seq(0.00000000000000000000001, 0.00000000000000000001, by = 0.00000000000000000000001)
+mass000 <- seq(0.00000000000000000001, 0.00000000000000001, by = 0.00000000000000000001)
+mass00 <- seq(0.00000000000000001, 0.00000000000001, by = 0.00000000000000001)
+mass0 <- seq(0.00000000000001, 0.00000000001, by = 0.00000000000001)
+mass1 <- seq(0.00000000001, 0.00000001, by = 0.00000000001)
+mass2 <- seq(0.00000001, 0.00001, by = 0.00000001)
+mass3 <- seq(0.00001, 0.01, by = 0.00001)
+mass4 <- seq(0.01, 10, by = 0.01)
+mass5 <- seq(10, 100, by = 1)
+mass <- c(mass000000, mass00000, mass0000, mass00, mass0, mass1, mass2, mass3, mass4, mass5)
 
 temp <- seq(0, 30, by = 1)
 
 temp_dep <- data.frame(temperature = temp, optimal_mass_best = rep(0, length(temp)), optimal_mass_low = rep(0, length(temp)), optimal_mass_high = rep(0, length(temp)), survival = rep(0, length(temp)))
 
+
+size_pd <- 50000
+
+posterior_distribution_predictions <- data.frame(temp = c(rep(0, size_pd), rep(1, size_pd),rep(2, size_pd),rep(3,(size_pd)),rep(4,(size_pd)),rep(5,(size_pd)),rep(6,(size_pd)),rep(7,(size_pd)),rep(8,(size_pd)),rep(9,(size_pd)),rep(10,(size_pd)),rep(11,(size_pd)),rep(12,(size_pd)),rep(13,(size_pd)),rep(14,(size_pd)),rep(15,(size_pd)),rep(16,(size_pd)),rep(17,(size_pd)),rep(18,(size_pd)),rep(19,(size_pd)),rep(20,(size_pd)),rep(21,(size_pd)),rep(22,(size_pd)),rep(23,(size_pd)),rep(24,(size_pd)),rep(25,(size_pd)),rep(26,(size_pd)),rep(27,(size_pd)),rep(28,(size_pd)),rep(29,(size_pd)),rep(30,(size_pd))), optimal_mass_pred = rep(0, (size_pd*length(temp))))
+
 #For each temperature, I find the egg mass that maximizes survivorship per clutch mass, described by the my_mod() function. This egg mass is the optimal mass, and is stored in the temp_dep df. 
 for(i in 1:length(temp)){
 	
-	d_d_best <- data.frame(l= mass, s= my_mod(mass,   temp[i])[,1], ss = (my_mod(mass,   temp[i])[,1]*mass))
-	d_d_low <- data.frame(l= mass, s= my_mod(mass,   temp[i])[,2])
-	d_d_high <- data.frame(l= mass, s= my_mod(mass,   temp[i])[,3])
-
+	#Generate a df of parental fitness ("s") vs. mass ("l"). 
+	d_d_best <- data.frame(l= mass, s= my_mod(mass, temp[i],bl, al, xl, nl, I, q, be, ae, Eze, Ege, ne, Ez, Eg)[,1], ss = (my_mod(mass,temp[i],bl, al, xl, nl, I, q, be, ae, Eze, Ege, ne, Ez, Eg)[,1]*mass))
+	
+	#Find and store the mass ("l") that maximizes parental fitness ("s").
 	temp_dep$optimal_mass_best[i] <- d_d_best$l[d_d_best$s == max(d_d_best$s )]
-	temp_dep$optimal_mass_low[i] <- d_d_low$l[d_d_low$s == max(d_d_low$s )]
-	temp_dep$optimal_mass_high[i] <- d_d_high$l[d_d_high$s == max(d_d_high$s )]
 	temp_dep$survival[i] <- d_d_best$ss[d_d_best$s == max(d_d_best$s )]
+	
+	x <- rep(0, size_pd)
+	
+	for(j in 1:size_pd){
+	
+		#At each temperature, I generate "size_pd" (=50,000 in this case) predictions for optimal egg size by randomly sampling the posterior distribution for each model parameter.	
+		d_d_pd <- data.frame(l= mass, s= my_mod(mass, temp[i], exp(sample(posterior_l_mort_int, 1)), exp(sample(posterior_l_growth_int, 1)), sample(posterior_l_mort_mass_dep, 1), sample(posterior_l_growth_mass_dep, 1), exp(sample(posterior_l_met_int, 1)), sample(posterior_l_met_temp_dep, 1), exp(sample(posterior_egg_mort_int, 1)), exp(sample(posterior_egg_dev_int, 1)), sample(posterior_egg_mort_temp_dep, 1), sample(posterior_egg_dev_temp_dep, 1), sample(posterior_egg_dev_mass_dep, 1), sample(posterior_l_mort_temp_dep, 1), sample(posterior_l_growth_temp_dep, 1))[,1])
+	
+		x[j] <- d_d_pd$l[d_d_pd$s == max(d_d_pd$s )]
+		
+	}
 
+posterior_distribution_predictions$optimal_mass_pred[posterior_distribution_predictions$temp == (i-1)] <- x	
+
+print(i)
+	
 }
 
 #This is the predicted relationship
 mod <- lm(log(optimal_mass_best) ~ temperature, data = temp_dep)
 summary(mod)
 
-#Plot the observed relationship from the "d" df and the predicted relationship on top of one another
 
-d %>% ggplot(aes(x = Temp_mean, y = log(egg_mass_g) )) + geom_point( shape = 21, stroke=1.1) + geom_smooth(method = "lm", se = F, color = "black") +  ylab("ln egg mass (g)") + xlab(expression(paste("temperature (", ""^{o}, "C)")))  + theme(legend.position = c(0.5, 0.9), legend.title = element_blank()) + ylim(c(-12, -1))   + geom_line(data = temp_dep, aes(x = temperature, y = log(optimal_mass_best)), size = 1,  color = "red")   + geom_line(data = temp_dep, aes(x = temperature, y = log(optimal_mass_low)), size = 0.5, linetype=2,  color = "red")  + geom_line(data = temp_dep, aes(x = temperature, y = log(optimal_mass_high)), size = 0.5, linetype=2,  color = "red") + annotate("text", x = 6, y = -11.5, label = "y == 0.0029 * e^{-0.09*x}", parse=T, size = 5) + annotate("text", x = 6, y = -10.5, label = "y == 0.011 * e^{-0.09*x}", parse=T, size = 5, color = "red")
+#This df gives the lower and upper 95% Highest Density Intervals for the 50,000 predictions which were generated by randomly sampling the posterior distributions for each model parameter.
+uncertainty_df <- posterior_distribution_predictions %>% group_by(temp) %>% summarize( ci_low = hdi(log(optimal_mass_pred))[1], ci_high = hdi(log(optimal_mass_pred))[2])
+
+#Plot the observed relationship from the "d" df and the predicted relationship on top of one another. Also include the lower and upper 95% HDIs from the uncertainty df. 
+d %>% ggplot(aes(x = Preferred.temp, y = log(Egg.mass..g.) )) + geom_point( shape = 21, stroke=1.1) + geom_smooth(method = "lm", se = F, color = "black") +  ylab("ln egg mass (g)") + xlab(expression(paste("temperature (", ""^{o},"C)")))  + theme(legend.position = c(0.5, 0.9), legend.title = element_blank())    + geom_line(data = temp_dep, aes(x = temperature, y = log(optimal_mass_best)), size = 1,  color = "red")   + geom_line(data = uncertainty_df, aes(x = temp, y = ci_low), method = "lm", color = "red", linetype = 2)  + geom_line(data = uncertainty_df, aes(x = temp, y = ci_high), color = "red", linetype = 2) + annotate("text", x = 4.5, y = -23.5, label = "y == 0.003 * e^{-0.09*x}", parse=T, size = 5) + annotate("text", x = 4.5, y = -22, label = "y == 0.013 * e^{-0.11*x}", parse=T, size = 5, color = "red") 
 
 
 ############################################
 #Make Fig. 1
 ############################################
 
-mass <- seq(0.00001, 0.1, by = 0.00001) 
+
+mass2 <- seq(0.00000001, 0.00001, by = 0.00000001)
+mass3 <- seq(0.00001, 0.01, by = 0.00001)
+mass4 <- seq(0.01, 10, by = 0.01)
+mass5 <- seq(10, 100, by = 1)
+mass <- c(mass3, mass4, mass5)
+
 
 #Illustrate how the fitness-egg size curves change with temperatures (0, 5, 10, & 15 C)
-surv_data <- data.frame(mass = c(mass,mass,mass,mass), temp = c(rep(0, length(mass)), rep(5, length(mass)), rep(10, length(mass)), rep(15, length(mass))) ) %>% rowwise() %>% mutate(survival_per_fecund_best = my_mod(mass,  temp)[,1], survival_per_fecund_low = my_mod(mass,  temp)[,2],survival_per_fecund_high = my_mod(mass,  temp)[,3]) %>% data.frame()
+surv_data <- data.frame(mass = c(mass,mass,mass,mass), temp = c(rep(0, length(mass)), rep(5, length(mass)), rep(10, length(mass)), rep(15, length(mass))) ) %>% rowwise() %>% mutate(survival_per_fecund_best = my_mod(mass,  temp, bl, al, xl, nl, I, q, be, ae, Eze, Ege, ne, Ez, Eg)[,1]) %>% data.frame()
 head(surv_data)
 
 #The plot
-surv_data %>% ggplot(aes(x = log(mass), y = log(survival_per_fecund_best))) + geom_line(aes(color = as.factor(temp)), size = 1)  + theme( legend.position = c(0, 0.9)) + labs(color = expression(paste("Temp ", ""^{o}, "C"))) + guides(color = guide_legend(ncol=2)) + scale_color_manual(values = c("blue", "green2", "red", "orange")) + xlab(expression(paste("ln"," egg mass (g)")))+ ylab(expression(paste("ln"," number surviving per clutch mass"))) + geom_point(x = log(temp_dep$optimal_mass_best[1]), y = log(max(filter(surv_data, temp==0)$survival_per_fecund_best)), color = "blue", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[6]), y = log(max(filter(surv_data, temp==5)$survival_per_fecund_best)), color = "green2", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[11]), y = log(max(filter(surv_data, temp==10)$survival_per_fecund_best)), color = "red", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[16]), y = log(max(filter(surv_data, temp==15)$survival_per_fecund_best)), color = "orange", size = 2) + xlim(c(-9,-2)) +ylim(c(-2, 2))
+surv_data %>% ggplot(aes(x = log(mass), y = log(survival_per_fecund_best))) + geom_line(aes(color = as.factor(temp)), size = 1)  + theme( legend.position = c(0, 0.9)) + labs(color = expression(paste("Temp ", ""^{o}, "C"))) + guides(color = guide_legend(ncol=2)) + scale_color_manual(values = c("blue", "green2", "red", "orange")) + xlab("ln egg mass (g)")+ ylab("ln number surviving per clutch mass") + geom_point(x = log(temp_dep$optimal_mass_best[1]), y = log(max(filter(surv_data, temp==0)$survival_per_fecund_best)), color = "blue", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[6]), y = log(max(filter(surv_data, temp==5)$survival_per_fecund_best)), color = "green2", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[11]), y = log(max(filter(surv_data, temp==10)$survival_per_fecund_best)), color = "red", size = 2) + geom_point(x = log(temp_dep$optimal_mass_best[16]), y = log(max(filter(surv_data, temp==15)$survival_per_fecund_best)), color = "orange", size = 2) + xlim(c(-10, 0)) + ylim(c(-6, 0))
 
 
 
@@ -215,39 +240,40 @@ surv_data %>% ggplot(aes(x = log(mass), y = log(survival_per_fecund_best))) + ge
 
 #Plot size and temperature dependence of egg and larval mortality and growth rates at two temperatures, to help visualize why smaller eggs are favored in warmer environments. 
 
+
 rates <- function(m, t){
 	
 	mass <- m
 	temp <- t
-	dt <- 1/(65*m^0.2*exp(-0.09*t)) 
-	emr <- 0.032*exp(0.17*t)
-	lgr <- 0.048*exp(0.063*t)
-	lmr <- 0.014*m^-0.23*exp(0.063*t)	
+	dt <- 1/(ae*m^ne*exp(Ege*t))
+	emr <- be*exp(Eze*t)
+	lgr <- al*(m^nl)*exp(Eg*t)/m
+	lmr <- bl*(m^xl)*exp(Ez*t)	
 	return(cbind(mass, temp, dt, emr, lgr, lmr))
 	
 }
 mass <- seq(0.0001, 0.1, by = 0.0001)
 
+
 #Make a df to help plot.
 rd <- data.frame(mass = c(mass,mass), temp = c(rep(5, length(mass)), rep(10, length(mass))) ) %>% rowwise() %>% mutate(dt = rates(mass,  temp)[,3], emr = rates(mass,  temp)[,4], lgr = rates(mass,  temp)[,5], lmr = rates(mass,  temp)[,6]) %>% data.frame()
 
 #Make plots.
+
 larvae_hot<-
-ggplot() + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = lmr, linetype="1"), color = "red", size = 1)  + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = lgr, linetype="2"), color = "red",  size = 1)   +  ggtitle(expression(paste("larvae at ", 10^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 10],  linetype = "dotted", size = 0.8, color = "red") +  ylab("") + xlab("")  + scale_linetype_manual(name = "",values = c("1"=1,"2"=2), labels = c("mortality", "growth"))  + theme(legend.position=c(0.5,0.95), legend.key.width = unit(1, "cm"), plot.title = element_text(face = "plain")) + scale_x_continuous(breaks = c(0, 0.005, 0.01), limits = c(0, 0.01)) + scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
+ggplot() + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = lmr, linetype="1"), color = "red", size = 1)  + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = lgr, linetype="2"), color = "red",  size = 1)   +  ggtitle(expression(paste("larvae at ", 10^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 10],  linetype = "dotted", size = 0.8, color = "red") +  ylab("") + xlab("")  + scale_linetype_manual(name = "",values = c("1"=1,"2"=2), labels = c("mortality", "growth"))  + theme(legend.position=c(0.5,0.95), legend.key.width = unit(1, "cm"), plot.title = element_text(face = "plain")) + scale_x_continuous(breaks = c(0,  0.01, 0.02), limits = c(0, 0.02)) + scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
 
 egg_hot<-
-ggplot() + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = dt, linetype="2"), color = "red", size = 1) + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = emr, linetype="1"), color = "red", size = 1)   +  ggtitle(expression(paste("eggs at ", 10^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 10], color = "red", linetype = "dotted", size = 0.8)   + ylab("") + xlab("") + scale_linetype_manual(name = "",values = c("1"=1,"2"=2), labels = c("mortality", "development"))  + theme(legend.position=c(0.5,0.95), legend.key.width = unit(1, "cm"), plot.title = element_text(face = "plain")) + scale_x_continuous(breaks = c(0, 0.005, 0.01), limits = c(0, 0.01))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
+ggplot() + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = dt, linetype="2"), color = "red", size = 1) + geom_line(data = filter(rd, temp == 10), aes(x = mass, y = emr, linetype="1"), color = "red", size = 1)   +  ggtitle(expression(paste("eggs at ", 10^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 10], color = "red", linetype = "dotted", size = 0.8)   + ylab("") + xlab("") + scale_linetype_manual(name = "",values = c("1"=1,"2"=2), labels = c("mortality", "development"))  + theme(legend.position=c(0.5,0.95), legend.key.width = unit(1, "cm"), plot.title = element_text(face = "plain")) + scale_x_continuous(breaks = c(0,  0.01, 0.02), limits = c(0, 0.02))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
 
 larvae<-
-ggplot() + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = lmr), color = "blue", size = 1)  + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = lgr), color = "blue", linetype=2, size = 1)  + theme(legend.position="none", plot.title = element_text(face = "plain"))   +  ggtitle(expression(paste("larvae at ", 5^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 5], color = "blue", linetype = "dotted", size = 0.8)  +  ylab("") + xlab("") + scale_x_continuous(breaks = c(0, 0.005, 0.01), limits = c(0, 0.01))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
+ggplot() + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = lmr), color = "blue", size = 1)  + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = lgr), color = "blue", linetype=2, size = 1)  + theme(legend.position="none", plot.title = element_text(face = "plain"))   +  ggtitle(expression(paste("larvae at ", 5^{o}, "C")))   + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 5], color = "blue", linetype = "dotted", size = 0.8)  +  ylab("") + xlab("") + scale_x_continuous(breaks = c(0,  0.01, 0.02), limits = c(0, 0.02))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
 
 egg<-
-ggplot() + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = dt), color = "blue", linetype=2, size = 1) + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = emr), color = "blue", size = 1) + scale_color_manual(values = c("green2", "orange")) + theme(legend.position="none", plot.title = element_text(face = "plain"))  +  ggtitle(expression(paste("eggs at ", 5^{o}, "C")))  + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 5], color = "blue", linetype = "dotted", size = 0.8)   + ylab("") + xlab("") + scale_x_continuous(breaks = c(0, 0.005, 0.01), limits = c(0, 0.01))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
+ggplot() + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = dt), color = "blue", linetype=2, size = 1) + geom_line(data = filter(rd, temp == 5), aes(x = mass, y = emr), color = "blue", size = 1) + scale_color_manual(values = c("green2", "orange")) + theme(legend.position="none", plot.title = element_text(face = "plain"))  +  ggtitle(expression(paste("eggs at ", 5^{o}, "C")))  + geom_vline(xintercept = temp_dep$optimal_mass_best[temp_dep$temperature == 5], color = "blue", linetype = "dotted", size = 0.8)   + ylab("") + xlab("") + scale_x_continuous(breaks = c(0,  0.01, 0.02), limits = c(0, 0.02))+ scale_y_continuous(breaks = c(0.05, 0.15, 0.25), limits = c(0.05, 0.25))
 
-#Put plots together.
+#put plots together.
 p<-plot_grid(egg_hot, larvae_hot, egg, larvae, align =c("l", "r" ), labels = "AUTO", label_x=0.23, label_y=0.89, label_fontface="plain")
 ggdraw(p ) + draw_label("mass (g)", x = 0.5, y = 0.03, size = 14) + draw_label("rate (1/day)", x = 0.03, y = 0.5, angle = 90, size = 14)
-
-
 
 
